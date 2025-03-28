@@ -1,7 +1,7 @@
 import { parseCSV } from '../csv/csv.js';
 import People from '../models/people.js';
 import { createInterface } from 'readline';
-import { Sequelize } from 'sequelize'; // Importe Sequelize para usar os operadores
+import { Sequelize } from 'sequelize';
 
 const rl = createInterface({
   input: process.stdin,
@@ -14,24 +14,39 @@ function askQuestion(question) {
 
 export async function importCSVtoDB(filePath) {
   const data = await parseCSV(filePath);
-  for (const row of data) {
-    await People.create({
-      Index: row.Index,
-      User_Id: row['User Id'],
-      First_Name: row['First Name'],
-      Last_Name: row['Last Name'],
-      Sex: row.Sex,
-      Email: row.Email,
-      Phone: row.Phone,
-      Date_of_birth: row['Date of birth'],
-      Job_Title: row['Job Title'],
-    });
+  console.log(`Total de registros no CSV: ${data.length}`);
+
+  const transaction = await People.sequelize.transaction();
+  try {
+    let count = 0;
+    for (const row of data) {
+      await People.create({
+        Index: row.Index,
+        User_Id: row['User Id'],
+        First_Name: row['First Name'],
+        Last_Name: row['Last Name'],
+        Sex: row.Sex,
+        Email: row.Email,
+        Phone: row.Phone,
+        Date_of_birth: row['Date of birth'],
+        Job_Title: row['Job Title'],
+      }, { transaction });
+      count++;
+      if (count % 10000 === 0) {
+        console.log(`${count} registros importados até agora...`);
+      }
+    }
+    await transaction.commit();
+    console.log('Dados importados com sucesso!');
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Erro ao importar dados:', error.message);
   }
-  console.log('Dados importados com sucesso!');
 }
 
 export async function listPeople() {
-  const people = await People.findAll({ limit: 10 }); // Limite para exemplo
+  //const people = await People.findAll({ limit: 10 });
+  const people = await People.findAll();
   console.log('Dados importados:');
   console.log(JSON.stringify(people, null, 2));
 }
@@ -40,7 +55,7 @@ export async function filterPeopleByName() {
   const name = await askQuestion('Digite parte do nome para filtrar: ');
   const people = await People.findAll({
     where: {
-      First_Name: { [Sequelize.Op.like]: `%${name}%` }, // Use Sequelize.Op.like
+      First_Name: { [Sequelize.Op.like]: `%${name}%` },
     },
   });
   console.log('Resultados filtrados:');
