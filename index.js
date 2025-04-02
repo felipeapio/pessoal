@@ -4,7 +4,7 @@ import People from './models/people.js';
 
 (async () => {
   try {
-    // (Opcional) Verifica o primeiro registro do CSV, como você tinha antes
+    // Mostra o primeiro registro do CSV
     const data = await parseCSV('./people-100000.csv');
     console.log('Primeiro registro do CSV:', data[0]);
 
@@ -14,15 +14,16 @@ import People from './models/people.js';
 
     // Importa os dados do CSV para o banco
     await importCSVtoDB('./people-100000.csv');
+    console.log('Dados importados com sucesso.');
 
-    // Lista os primeiros 10 registros
+    // Lista os registros
     await listPeople();
 
-    // Filtra por nome
+    // Filtra por nome (entrada do teclado)
     await filterPeopleByName();
   } catch (error) {
     console.error('Erro:', error);
   } finally {
-    process.exit(); // Encerra o programa, fechando o readline
+    process.exit();
   }
 })();

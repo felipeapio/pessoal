@@ -6,12 +6,11 @@ import { Sequelize } from 'sequelize';
  */
 export function connectToDatabase() {
   const sequelize = new Sequelize('sys', 'root', 'avanti500', {
-    host: 'localhost', // Substitua pelo host do seu banco de dados
-    dialect: 'mysql', // Define o dialeto como MySQL
-    logging: false, // Define como false para desativar logs de SQL no console
+    host: 'localhost',
+    dialect: 'mysql',
+    logging: false,
   });
 
-  // Testa a conexão
   sequelize
     .authenticate()
     .then(() => {
